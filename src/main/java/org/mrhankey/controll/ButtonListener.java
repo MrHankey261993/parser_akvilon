@@ -18,22 +18,14 @@ import org.mrhankey.util.UtilParser;
 import org.mrhankey.view.View;
 
 public class ButtonListener {
+	static View view = new View();
+	static CreateFile createFile = new CreateFile();
+	static Parser parser = new Parser();
+	static UtilParser utilParser = new UtilParser();
 
-	View view = new View();
-	CreateFile createFile = new CreateFile();
-	Parser parser = new Parser();
-	UtilParser utilParser = new UtilParser();
+	public static ActionListener listenerCreateButton() {
 
-	public ButtonListener() {
-		listenerCreateButton();
-		listenerUpdateButton();
-		/*
-		 * listenerUpdateLinksButton(); listenerNotUpdateButton();
-		 */
-	}
-
-	public void listenerCreateButton() {
-		view.getCreateFile().addActionListener(new ActionListener() {
+		ActionListener actionListener = new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -45,45 +37,49 @@ public class ButtonListener {
 				}
 
 			}
-		});
+		};
+		return actionListener;
 
 	}
 
-	public void listenerUpdateButton() {
-		view.getUpdateList().addActionListener(new ActionListener() {
+	public static ActionListener listenerUpdateButton() {
+		ActionListener actionListener = new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JDialog dialog = view.createDialog("", true);
 				dialog.setVisible(true);
-				
 
 			}
-		});
-		
+		};
+		return actionListener;
+
 	}
 
-	public void listenerUpdateLinksButton() {
-
-		view.getUpdateLinks().addActionListener(new ActionListener() {
+	public static ActionListener listenerUpdateLinksButton() {
+		ActionListener actionListener = new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
+					
+					JPanel panel = View.creatProgressBar("", true);
+					panel.setVisible(true);
 					utilParser.linksProduct();
 					JOptionPane.showMessageDialog(view, "Список обнавлён");
+
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-
 			}
-		});
+		};
+		return actionListener;
 
 	}
 
-	public void listenerNotUpdateButton() {
-		view.getNotUpdateLinks().addActionListener(new ActionListener() {
+	public static ActionListener listenerNotUpdateButton() {
+		ActionListener actionListener = new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -108,7 +104,8 @@ public class ButtonListener {
 				}
 
 			}
-		});
+		};
+		return actionListener;
 	}
 
 }

@@ -31,8 +31,9 @@ public class CreateFile {
 		File file = new File("text.txt");
 		if (file.length() != 0) {
 			FileInputStream fis = new FileInputStream(file);
-
 			ObjectInputStream ois = new ObjectInputStream(fis);
+			
+			
 			try {
 				listSpares = (List<Spares>) ois.readObject();
 			} catch (ClassNotFoundException e1) {

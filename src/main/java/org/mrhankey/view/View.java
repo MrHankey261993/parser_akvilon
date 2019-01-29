@@ -15,6 +15,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.mrhankey.controll.ButtonListener;
 import org.mrhankey.controll.Parser;
 import org.mrhankey.util.UtilParser;
 
@@ -28,19 +29,21 @@ public class View extends JFrame {
 	Parser parser = new Parser();
 	UtilParser utilParser = new UtilParser();
 
-	public View() {
-		init();
-	}
+
+
 
 	public void init() {
 
 		JPanel panel = new JPanel();
 		updateList = new JButton("Обновить список");
 		updateList.setBounds(20, 20, 190, 30);
+		updateList.addActionListener(ButtonListener.listenerUpdateButton());
+		
 		addInBD = new JButton("Добавить в базу данных");
 		addInBD.setBounds(20, 70, 190, 30);
 		createFile = new JButton("Создать файл");
 		createFile.setBounds(20, 120, 190, 30);
+		createFile.addActionListener(ButtonListener.listenerCreateButton());
 /*		updateList.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JDialog dialog = createDialog("Модальное", true);
@@ -64,55 +67,11 @@ public class View extends JFrame {
 		updateLinks = new JButton("Обновить сылки");
 		updateLinks.setMargin(new Insets(0, 0, 0, 0));
 		updateLinks.setBounds(0, 100, 125, 50);
-		updateLinks.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					try {
-						parser.parser(utilParser.linksProduct());
-					} catch (ClassNotFoundException | InterruptedException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					JOptionPane.showMessageDialog(dialog, "Список обнавлён");
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				
-			}
-		});
+		updateLinks.addActionListener(ButtonListener.listenerUpdateLinksButton());
 		notUpdateLinks = new JButton("Не обновлять сылки");
 		notUpdateLinks.setMargin(new Insets(0, 0, 0, 0));
 		notUpdateLinks.setBounds(125, 100, 125, 50);
-		notUpdateLinks.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					FileInputStream fis = new FileInputStream("links.txt");
-					ObjectInputStream ois = new ObjectInputStream(fis);
-					utilParser.setLinksProducts((List<String>) ois.readObject());
-					JOptionPane.showMessageDialog(dialog, "Сылки успешно загружены");
-					parser.parser(utilParser.getLinksProducts());
-					
-				} catch (FileNotFoundException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (ClassNotFoundException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				
-			}
-		});
+		notUpdateLinks.addActionListener(ButtonListener.listenerNotUpdateButton());
 		dialog.add(updateLinks);
 		dialog.add(notUpdateLinks);
 		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -121,6 +80,14 @@ public class View extends JFrame {
 		dialog.setLocationRelativeTo(null);
 		dialog.setLayout(null);
 		return dialog;
+	}
+	public static JPanel creatProgressBar(String title, boolean modal) {
+		JPanel panel = new JPanel();
+		panel.setSize(200, 200);
+		panel.setLayout(null);;
+		
+		return panel;
+		
 	}
 
 	public JButton getUpdateLinks() {

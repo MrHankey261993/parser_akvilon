@@ -20,35 +20,10 @@ import org.mrhankey.util.UtilParser;
 public class Parser {
 
 	static String URL = "https://akvilonavto.by";
-	private List<String> list;
-	UtilParser utilParser = new UtilParser();
 	private List<Spares> listSpares = new ArrayList<>();
 
-	public List<Spares> getListSpares() {
-		return listSpares;
-	}
+	public List<Spares> parser(List<String> links) throws IOException, InterruptedException, ClassNotFoundException {
 
-	public void setListSpares(List<Spares> listSpares) {
-		this.listSpares = listSpares;
-	}
-
-	public List<String> getList() {
-		return list;
-	}
-
-	public void setList(List<String> list) {
-		this.list = list;
-	}
-
-	public List<Spares> parser(List<String>links) throws IOException, InterruptedException, ClassNotFoundException {
-
-		/*FileInputStream fis = new FileInputStream("links.txt");
-		ObjectInputStream ois = new ObjectInputStream(fis);
-		utilParser.setLinksProducts((List<String>) ois.readObject());
-		System.out.println(utilParser.getLinksProducts().size());*/
-		
-		
-		
 		long start = System.currentTimeMillis();
 		links.parallelStream().forEach(s -> {
 			try {
@@ -113,5 +88,14 @@ public class Parser {
 		// listSpares.getSpares();
 
 	}
+
+	public List<Spares> getListSpares() {
+		return listSpares;
+	}
+
+	public void setListSpares(List<Spares> listSpares) {
+		this.listSpares = listSpares;
+	}
+
 
 }

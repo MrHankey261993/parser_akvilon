@@ -18,7 +18,8 @@ public class Main {
 		List <Spares> list= (List<Spares>) ois.readObject();
 		System.out.println(list.size());*/
 		
-		ButtonListener b = new ButtonListener();
+		View view = new View();
+		view.init();
 	}
 
 }
