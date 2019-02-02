@@ -1,44 +1,27 @@
 package org.mrhankey.util;
 
-import java.awt.geom.Ellipse2D;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
-import org.jsoup.Connection;
+import org.apache.log4j.Logger;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.mrhankey.view.View;
-
-import com.mysql.cj.protocol.a.TracingPacketReader;
 
 public class UtilParser {
 	private List<String> linksProducts;
 	private final static String URL = "https://akvilonavto.by";
 	private static final String START_PAGE = "https://akvilonavto.by/catalog/zapasnye_chasti/zapchasti_mtz/";
 	static final String TAGLI_CLASS_NAME = "section col-xs-6 col-md-6 col-md-4 col-lg-5rs";
-	View view;
-
-	public List<String> getLinksProducts() {
-		return linksProducts;
-	}
-
-	public void setLinksProducts(List<String> linksProducts) {
-		this.linksProducts = linksProducts;
-	}
+	private Logger log = Logger.getLogger(UtilParser.class);
 
 //Метод собирает сылки на модели
-	public static List<String> linksOnModel() {
+	public List<String> linksOnModel() {
 
 		List<String> links = new ArrayList<String>();
 		Document doc = null;
@@ -50,7 +33,7 @@ public class UtilParser {
 				links.add(href);
 			}
 		} catch (IOException e) {
-			// add log
+			log.error(e.getMessage());
 		}
 
 		return links;
@@ -58,7 +41,7 @@ public class UtilParser {
 	}
 
 //Метод собирает ссылки на группы(Мотор, сцепление и т.д.) всех моделей
-	public static List<String> linksOnGruop() {
+	public List<String> linksOnGruop() {
 		List<String> links = new ArrayList<String>();
 		linksOnModel().parallelStream().forEach(s -> {
 
@@ -70,7 +53,7 @@ public class UtilParser {
 					links.add(href);
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error(e.getMessage());
 			}
 
 		});
@@ -79,144 +62,127 @@ public class UtilParser {
 	}
 
 //метод собирает сылки на все продукты
-	public List<String> linksProduct() throws IOException {
+	public List<String> linksProduct() {
 		linksProducts = new ArrayList<>();
 		long start = System.currentTimeMillis();
 		linksOnGruop().parallelStream().forEach(s -> {
-
-			Response response = null;
+			Response response;
 			try {
 				response = Jsoup.connect(URL + s).execute();
 				if (response.statusCode() == 503 || response.statusCode() == 502) {
 					Thread.sleep(10000);
 				}
 			} catch (IOException e) {
-				// добавить логирование
+				log.error(e.getMessage());
 			} catch (InterruptedException e) {
-				// add log
+				log.error(e.getMessage());
 			}
-
-			//
-            
-			Document doc = null;
+			Document doc;
 			try {
 				doc = Jsoup.connect(URL + s).timeout(30000 * 10).userAgent("Chrome/70").followRedirects(true).get();
-			} catch (IOException e) {
-				// add log
-			}
-
-			Elements tagA = doc.select("div.list-showcase__name > a");
-			// Проверка есть ли сылки на странице
-			if (tagA.isEmpty()) {
-				Elements tagLi = doc.getElementsByClass(TAGLI_CLASS_NAME);
-				for (Element element : tagLi) {
-					String href = element.select("a.parent").attr("href");
-					try {
+				Elements tagA = doc.select("div.list-showcase__name > a");
+				// Проверка есть ли сылки на странице
+				if (tagA.isEmpty()) {
+					Elements tagLi = doc.getElementsByClass(TAGLI_CLASS_NAME);
+					for (Element element : tagLi) {
+						String href = element.select("a.parent").attr("href");
 						doc = Jsoup.connect(URL + href).timeout(30000 * 10).userAgent("Chrome/70").followRedirects(true)
 								.get();
-					} catch (IOException e) {
-						// add log
+						Elements arrowRight;
+						do {
+							tagA = doc.select("div.list-showcase__name > a");
+							for (Element a : tagA) {
+								href = a.attr("href");
+								linksProducts.add(href);
+								System.out.println(href);
+							}
+							try {
+								Thread.sleep(1000);
+							} catch (InterruptedException e) {
+								log.error(e.getMessage());
+							}
+							arrowRight = doc.select("a.right");
+							// Проверяем есть ли ещё товар в этой группе
+							if (!arrowRight.isEmpty()) {
+								href = arrowRight.attr("href");
+								try {
+									response = Jsoup.connect(URL + href).execute();
+									if (response.statusCode() == 503 || response.statusCode() == 502) {
+										Thread.sleep(30000);
+										log.warn("Статус код = " + response.statusCode() + s);
+									}
+								} catch (IOException e) {
+									log.error(e.getMessage());
+								} catch (InterruptedException e) {
+									log.error(e.getMessage());
+								}
+								doc = Jsoup.connect(URL + href).timeout(30000 * 10).userAgent("Chrome/70")
+										.followRedirects(true).ignoreHttpErrors(true).ignoreContentType(true).get();
+							}
+						} while (!arrowRight.isEmpty());
 					}
-
+				} else {
 					Elements arrowRight;
 					do {
 						tagA = doc.select("div.list-showcase__name > a");
 						for (Element a : tagA) {
-							href = a.attr("href");
+							String href = a.attr("href");
 							linksProducts.add(href);
-
-							System.out.println(href);
+							System.out.println(a.text() + Thread.currentThread().getName());
 						}
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
-							// add log
+							log.error(e.getMessage());
 						}
-
 						arrowRight = doc.select("a.right");
 						// Проверяем есть ли ещё товар в этой группе
 						if (!arrowRight.isEmpty()) {
-							href = arrowRight.attr("href");
+							String href = arrowRight.attr("href");
 							try {
 								response = Jsoup.connect(URL + href).execute();
+
 								if (response.statusCode() == 503 || response.statusCode() == 502) {
 									Thread.sleep(30000);
+									log.warn("Статус код = " + response.statusCode() + s);
 								}
-							} catch (IOException e) {
-								// add log
-							} catch (InterruptedException e) {
-								// add log
-							}
-							try {
 								doc = Jsoup.connect(URL + href).timeout(30000 * 10).userAgent("Chrome/70")
 										.followRedirects(true).ignoreHttpErrors(true).ignoreContentType(true).get();
-							} catch (IOException e) {
-								// add log
+
+								System.out.println(response.statusCode() + " " + href);
+							} catch (InterruptedException e) {
+								log.error(e.getMessage());
 							}
 
-							System.out.println(response.statusCode() + " " + href);
 						}
 					} while (!arrowRight.isEmpty());
 
 				}
-			} else {
-
-				Elements arrowRight;
-				do {
-					tagA = doc.select("div.list-showcase__name > a");
-					for (Element a : tagA) {
-						String href = a.attr("href");
-						linksProducts.add(href);
-
-						System.out.println(a.text() + Thread.currentThread().getName());
-
-					}
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						// add log
-					}
-					
-					arrowRight = doc.select("a.right");
-					// Проверяем есть ли ещё товар в этой группе
-					if (!arrowRight.isEmpty()) {
-						String href = arrowRight.attr("href");
-						try {
-							response = Jsoup.connect(URL + href).execute();
-
-							if (response.statusCode() == 503 || response.statusCode() == 502) {
-								Thread.sleep(30000);
-							}
-							doc = Jsoup.connect(URL + href).timeout(30000 * 10).userAgent("Chrome/70").followRedirects(true)
-									.ignoreHttpErrors(true).ignoreContentType(true).get();
-
-							System.out.println(response.statusCode() + " " + href);
-						} catch (IOException e) {
-							// add log
-						}
-						catch (InterruptedException e) {
-							// add log
-						}
-					
-					}
-				} while (!arrowRight.isEmpty());
-
+			} catch (IOException e) {
+				log.error(e.getMessage());
 			}
 
 		});
-		
+
 		long finsh = System.currentTimeMillis();
 		long itog = start - finsh;
 		System.out.println(linksProducts.size() + " " + itog);
-		File file = new File("links.txt");
-		FileOutputStream fos = new FileOutputStream(file);
-		ObjectOutputStream oos = new ObjectOutputStream(fos);
-		oos.writeObject(linksProducts);
+		try (FileOutputStream fos = new FileOutputStream("links.txt");
+				ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+			oos.writeObject(linksProducts);
+		} catch (IOException e) {
+			log.error(e.getMessage());
+		}
 		System.out.println("Файл записан");
-		fos.close();
-		JOptionPane.showMessageDialog(view ,"Список обновлён");
 		return linksProducts;
 
 	}
 
+	public List<String> getLinksProducts() {
+		return linksProducts;
+	}
+
+	public void setLinksProducts(List<String> linksProducts) {
+		this.linksProducts = linksProducts;
+	}
 }

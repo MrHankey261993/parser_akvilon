@@ -7,13 +7,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
-
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-
+import org.apache.log4j.Logger;
 import org.mrhankey.util.UtilParser;
 import org.mrhankey.view.View;
 
@@ -22,19 +19,14 @@ public class ButtonListener {
 	static CreateFile createFile = new CreateFile();
 	static Parser parser = new Parser();
 	static UtilParser utilParser = new UtilParser();
-
+	private static Logger log = Logger.getLogger(ButtonListener.class);
 	public static ActionListener listenerCreateButton() {
 
 		ActionListener actionListener = new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					createFile.createFile();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				createFile.createFile();
 
 			}
 		};
@@ -61,17 +53,10 @@ public class ButtonListener {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					
-					JPanel panel = View.creatProgressBar("", true);
-					panel.setVisible(true);
-					utilParser.linksProduct();
-					JOptionPane.showMessageDialog(view, "Список обнавлён");
-
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				JPanel panel = View.creatProgressBar("", true);
+				panel.setVisible(true);
+				parser.parser(utilParser.linksProduct());
+				JOptionPane.showMessageDialog(view, "Список обнавлён");
 			}
 		};
 		return actionListener;
@@ -83,24 +68,17 @@ public class ButtonListener {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					FileInputStream fis = new FileInputStream("links.txt");
-					ObjectInputStream ois = new ObjectInputStream(fis);
+				try (FileInputStream fis = new FileInputStream("links.txt");
+						ObjectInputStream ois = new ObjectInputStream(fis)) {				
 					utilParser.setLinksProducts((List<String>) ois.readObject());
-					parser.parser(utilParser.getLinksProducts());
 					JOptionPane.showMessageDialog(view, "Сылки успешно загружены");
+					parser.parser(utilParser.getLinksProducts());				
 				} catch (FileNotFoundException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					log.error(e1.getMessage());
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					log.error(e1.getMessage());
 				} catch (ClassNotFoundException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					log.error(e1.getMessage());
 				}
 
 			}

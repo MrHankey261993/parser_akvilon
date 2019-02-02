@@ -1,23 +1,12 @@
 package org.mrhankey.view;
 
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.List;
-
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-
 import org.mrhankey.controll.ButtonListener;
-import org.mrhankey.controll.Parser;
-import org.mrhankey.util.UtilParser;
 
 public class View extends JFrame {
 
@@ -26,8 +15,6 @@ public class View extends JFrame {
 	private JButton createFile;
 	private JButton updateLinks;
 	private JButton notUpdateLinks;
-	Parser parser = new Parser();
-	UtilParser utilParser = new UtilParser();
 
 
 
@@ -37,26 +24,19 @@ public class View extends JFrame {
 		JPanel panel = new JPanel();
 		updateList = new JButton("Обновить список");
 		updateList.setBounds(20, 20, 190, 30);
-		updateList.addActionListener(ButtonListener.listenerUpdateButton());
-		
+		updateList.addActionListener(ButtonListener.listenerUpdateButton());	
 		addInBD = new JButton("Добавить в базу данных");
 		addInBD.setBounds(20, 70, 190, 30);
 		createFile = new JButton("Создать файл");
 		createFile.setBounds(20, 120, 190, 30);
 		createFile.addActionListener(ButtonListener.listenerCreateButton());
-/*		updateList.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JDialog dialog = createDialog("Модальное", true);
-				dialog.setVisible(true);
-			}
-		});*/
 		add(panel);
 		panel.add(updateList);
 		panel.add(addInBD);
 		panel.add(createFile);
 		panel.setVisible(true);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setSize(200, 200);
+		setSize(200, 170);
 		setVisible(true);
 		setLocationRelativeTo(null);
 		setLayout(null);
@@ -64,19 +44,22 @@ public class View extends JFrame {
 
 	public JDialog createDialog(String title, boolean modal) {
 		JDialog dialog = new JDialog(this, title, modal);
-		updateLinks = new JButton("Обновить сылки");
+		JLabel label = new JLabel("Хотите обновить сылки?");
+		label.setBounds(50, 30, 150, 30);
+		updateLinks = new JButton("Да");
 		updateLinks.setMargin(new Insets(0, 0, 0, 0));
-		updateLinks.setBounds(0, 100, 125, 50);
+		updateLinks.setBounds(0, 70, 125, 50);
 		updateLinks.addActionListener(ButtonListener.listenerUpdateLinksButton());
-		notUpdateLinks = new JButton("Не обновлять сылки");
+		notUpdateLinks = new JButton("Нет");
 		notUpdateLinks.setMargin(new Insets(0, 0, 0, 0));
-		notUpdateLinks.setBounds(125, 100, 125, 50);
+		notUpdateLinks.setBounds(125, 70, 125, 50);
 		notUpdateLinks.addActionListener(ButtonListener.listenerNotUpdateButton());
+		dialog.add(label);
 		dialog.add(updateLinks);
 		dialog.add(notUpdateLinks);
 		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		dialog.setSize(250, 200);
+		dialog.setSize(250, 160);
 		dialog.setLocationRelativeTo(null);
 		dialog.setLayout(null);
 		return dialog;

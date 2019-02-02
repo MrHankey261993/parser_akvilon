@@ -1,41 +1,46 @@
 package org.mrhankey.controll;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.jsoup.Connection.Response;
+import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.mrhankey.model.ListSpares;
 import org.mrhankey.model.Spares;
-import org.mrhankey.util.UtilParser;
 
 public class Parser {
-
+	private Logger log = Logger.getLogger(Parser.class);
 	static String URL = "https://akvilonavto.by";
 	private List<Spares> listSpares = new ArrayList<>();
 
-	public List<Spares> parser(List<String> links) throws IOException, InterruptedException, ClassNotFoundException {
+	public List<Spares> parser(List<String> links){
 
 		long start = System.currentTimeMillis();
 		links.parallelStream().forEach(s -> {
+
+			// Запрос для обработки статуса сервера
+			Response response;
 			try {
-				// Запрос для обработки статуса сервера
-				Response response = Jsoup.connect(URL + s).followRedirects(false).execute();
-				Spares spares = new Spares();
+				response = Jsoup.connect(URL + s).followRedirects(false).execute();
 				if (response.statusCode() == 502 || response.statusCode() == 503) {
 					Thread.sleep(10000);
+					log.warn("Статус код = " + response.statusCode() + s);
 				}
-				Document doc = Jsoup.connect(URL + s).timeout(30000 * 10).userAgent("Chrome/70").followRedirects(true)
-						.get();
-
+			} catch (IOException e) {
+				log.error(e.getMessage());
+			} catch (InterruptedException e) {
+				log.error(e.getMessage());
+				
+			}
+			Spares spares = new Spares();
+			Document doc;
+			try {
+				doc = Jsoup.connect(URL + s).timeout(30000 * 10).userAgent("Chrome/70").followRedirects(true).get();
 				Element manufacturer = doc.getElementById("propBRAND");
 				if (manufacturer == null) {
 					spares.setProduction("Не указано");
@@ -65,27 +70,29 @@ public class Parser {
 				}
 				spares.setName(doc.title());
 				spares.setPrice(prices.get(0).text());
-
 				spares.setWeight(weight.text());
 				spares.setApplicability(applicability.text());
 				spares.setSubgroup(subgroup.text());
-				listSpares.add(spares);
-				System.out.println(spares + Thread.currentThread().getName());
-				System.out.println(listSpares.size());
-
-			} catch (Exception e) {
-				// TODO: handle exception
+			} catch (IOException e) {
+				log.error(e.getMessage());
 			}
+
+			listSpares.add(spares);
+			System.out.println(spares + Thread.currentThread().getName());
+			System.out.println(listSpares.size());
+
 		});
-		FileOutputStream fos = new FileOutputStream("text.txt");
-		ObjectOutputStream oos = new ObjectOutputStream(fos);
-		oos.writeObject(listSpares);
+		
+		try (FileOutputStream fos = new FileOutputStream("text.txt");
+		ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+			oos.writeObject(listSpares);
+		} catch (IOException e) {
+			log.error(e.getMessage());
+		}
 		long finsh = System.currentTimeMillis();
 		long itog = start - finsh;
 		System.out.println(itog);
-		fos.close();
 		return listSpares;
-		// listSpares.getSpares();
 
 	}
 
@@ -96,6 +103,5 @@ public class Parser {
 	public void setListSpares(List<Spares> listSpares) {
 		this.listSpares = listSpares;
 	}
-
 
 }
