@@ -6,7 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
-import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
@@ -19,10 +19,11 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.mrhankey.model.Spares;
+import org.mrhankey.view.View;
 
 public class CreateFile {
 	private Logger log = Logger.getLogger(CreateFile.class);
-
+	View view = new View();
 	public void createFile() {
 
 		List<Spares> listSpares = null;
@@ -30,6 +31,7 @@ public class CreateFile {
 		if (file.length() != 0) {
 			try (FileInputStream fis = new FileInputStream(file); ObjectInputStream ois = new ObjectInputStream(fis)) {
 				listSpares = (List<Spares>) ois.readObject();
+						System.out.println(listSpares.size());
 			} catch (ClassNotFoundException e) {
 				log.error(e.getMessage());
 			} catch (IOException e) {
@@ -79,26 +81,28 @@ public class CreateFile {
 			cell.setCellValue("Subgroup");
 			cell.setCellStyle(style);
 			sheet.setColumnWidth(6, 3000);
-
+			if(listSpares!=null) {
 			for (int i = 1, y = 0; i < listSpares.size(); i++, y++) {
-				row = sheet.createRow(i);
-				cell = row.createCell(0, CellType.STRING);
-				cell.setCellValue(listSpares.get(y).getArticul());
+				
+					row = sheet.createRow(i);
+					cell = row.createCell(0, CellType.STRING);
+					cell.setCellValue(listSpares.get(y).getArticul());
+				}
+				
 			}
 
 			File fileExcel = new File("test.xls");
 			try (FileOutputStream outputStream = new FileOutputStream(fileExcel)) {
 				workbook.write(outputStream);
+				
 			} catch (IOException e) {
 				log.error(e.getMessage());
 			}
 
-			System.out.println(file.getAbsolutePath());
+			
 
 		} else {
-			JDialog dialog = new JDialog();
-			dialog.setLocationRelativeTo(null);
-			dialog.setVisible(true);
+			JOptionPane.showMessageDialog(view, "Файл не найден");;
 
 		}
 

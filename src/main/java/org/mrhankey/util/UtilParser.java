@@ -4,8 +4,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.apache.http.HttpHost;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -23,7 +25,7 @@ public class UtilParser {
 //Метод собирает сылки на модели
 	public List<String> linksOnModel() {
 
-		List<String> links = new ArrayList<String>();
+		List<String> links = Collections.synchronizedList(new ArrayList<>());
 		Document doc = null;
 		try {
 			doc = Jsoup.connect(START_PAGE).get();
@@ -42,7 +44,7 @@ public class UtilParser {
 
 //Метод собирает ссылки на группы(Мотор, сцепление и т.д.) всех моделей
 	public List<String> linksOnGruop() {
-		List<String> links = new ArrayList<String>();
+		List<String> links = Collections.synchronizedList(new ArrayList<>());
 		linksOnModel().parallelStream().forEach(s -> {
 
 			try {
@@ -63,31 +65,46 @@ public class UtilParser {
 
 //метод собирает сылки на все продукты
 	public List<String> linksProduct() {
-		linksProducts = new ArrayList<>();
+		linksProducts = Collections.synchronizedList(new ArrayList<>());
 		long start = System.currentTimeMillis();
+		HttpHost proxy = new HttpHost("proxy.com", 80, "http");
 		linksOnGruop().parallelStream().forEach(s -> {
-			Response response;
+			Response response = null;
 			try {
 				response = Jsoup.connect(URL + s).execute();
 				if (response.statusCode() == 503 || response.statusCode() == 502) {
 					Thread.sleep(10000);
+					log.warn(response.statusCode() + " ");
 				}
 			} catch (IOException e) {
-				log.error(e.getMessage());
+				log.error(e);
 			} catch (InterruptedException e) {
-				log.error(e.getMessage());
+				log.error(e);
 			}
-			Document doc;
+			Document doc = null;
+				
 			try {
-				doc = Jsoup.connect(URL + s).timeout(30000 * 10).userAgent("Chrome/70").followRedirects(true).get();
+				try {
+					doc = Jsoup.connect(URL + s).timeout(30000 * 10).userAgent("Chrome/70")
+							.followRedirects(true).ignoreHttpErrors(true).ignoreContentType(true).get();
+				} catch (IOException e) {
+					log.error(e);
+				}
 				Elements tagA = doc.select("div.list-showcase__name > a");
 				// Проверка есть ли сылки на странице
 				if (tagA.isEmpty()) {
 					Elements tagLi = doc.getElementsByClass(TAGLI_CLASS_NAME);
 					for (Element element : tagLi) {
 						String href = element.select("a.parent").attr("href");
-						doc = Jsoup.connect(URL + href).timeout(30000 * 10).userAgent("Chrome/70").followRedirects(true)
-								.get();
+						response = Jsoup.connect(URL + href).execute();
+						
+						if(response.statusCode() == 503 || response.statusCode() == 504) {
+							Thread.sleep(10000);
+						    log.warn(response.statusCode());
+						}
+						
+						doc = Jsoup.connect(URL + href).timeout(30000 * 10).userAgent("Chrome/70")
+								.followRedirects(true).ignoreHttpErrors(true).ignoreContentType(true).get();
 						Elements arrowRight;
 						do {
 							tagA = doc.select("div.list-showcase__name > a");
@@ -99,7 +116,7 @@ public class UtilParser {
 							try {
 								Thread.sleep(1000);
 							} catch (InterruptedException e) {
-								log.error(e.getMessage());
+								log.error(e);
 							}
 							arrowRight = doc.select("a.right");
 							// Проверяем есть ли ещё товар в этой группе
@@ -112,9 +129,9 @@ public class UtilParser {
 										log.warn("Статус код = " + response.statusCode() + s);
 									}
 								} catch (IOException e) {
-									log.error(e.getMessage());
+									log.error(e);
 								} catch (InterruptedException e) {
-									log.error(e.getMessage());
+									log.error(e);
 								}
 								doc = Jsoup.connect(URL + href).timeout(30000 * 10).userAgent("Chrome/70")
 										.followRedirects(true).ignoreHttpErrors(true).ignoreContentType(true).get();
@@ -133,7 +150,7 @@ public class UtilParser {
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
-							log.error(e.getMessage());
+							log.error(e);
 						}
 						arrowRight = doc.select("a.right");
 						// Проверяем есть ли ещё товар в этой группе
@@ -151,7 +168,7 @@ public class UtilParser {
 
 								System.out.println(response.statusCode() + " " + href);
 							} catch (InterruptedException e) {
-								log.error(e.getMessage());
+								log.error(e);
 							}
 
 						}
@@ -159,7 +176,10 @@ public class UtilParser {
 
 				}
 			} catch (IOException e) {
-				log.error(e.getMessage());
+				log.error(e);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				log.error(e);;
 			}
 
 		});

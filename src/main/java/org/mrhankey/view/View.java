@@ -10,6 +10,10 @@ import org.mrhankey.controll.ButtonListener;
 
 public class View extends JFrame {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7046989751160615707L;
 	private JButton updateList;
 	private JButton addInBD;
 	private JButton createFile;

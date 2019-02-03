@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.jsoup.Connection.Response;
 import org.apache.log4j.Logger;
@@ -16,9 +17,9 @@ import org.mrhankey.model.Spares;
 public class Parser {
 	private Logger log = Logger.getLogger(Parser.class);
 	static String URL = "https://akvilonavto.by";
-	private List<Spares> listSpares = new ArrayList<>();
+	private List<Spares> listSpares = Collections.synchronizedList(new ArrayList<>());
 
-	public List<Spares> parser(List<String> links){
+	public List<Spares> parser(List<String> links) {
 
 		long start = System.currentTimeMillis();
 		links.parallelStream().forEach(s -> {
@@ -27,21 +28,25 @@ public class Parser {
 			Response response;
 			try {
 				response = Jsoup.connect(URL + s).followRedirects(false).execute();
-				if (response.statusCode() == 502 || response.statusCode() == 503) {
+				if (response.statusCode() == 502 || response.statusCode() == 503 || response.statusCode() == 500 || response.statusCode() == 504) {
 					Thread.sleep(10000);
 					log.warn("Статус код = " + response.statusCode() + s);
 				}
 			} catch (IOException e) {
-				log.error(e.getMessage());
+				log.error(e);
 			} catch (InterruptedException e) {
-				log.error(e.getMessage());
-				
+				log.error(e);
+
 			}
 			Spares spares = new Spares();
-			Document doc;
+			Document doc = null;
 			try {
 				doc = Jsoup.connect(URL + s).timeout(30000 * 10).userAgent("Chrome/70").followRedirects(true).get();
+			} catch (IOException e) {
+				log.error(e);
+			}
 				Element manufacturer = doc.getElementById("propBRAND");
+				
 				if (manufacturer == null) {
 					spares.setProduction("Не указано");
 				}
@@ -73,21 +78,19 @@ public class Parser {
 				spares.setWeight(weight.text());
 				spares.setApplicability(applicability.text());
 				spares.setSubgroup(subgroup.text());
-			} catch (IOException e) {
-				log.error(e.getMessage());
-			}
+			
 
 			listSpares.add(spares);
 			System.out.println(spares + Thread.currentThread().getName());
 			System.out.println(listSpares.size());
 
 		});
-		
+
 		try (FileOutputStream fos = new FileOutputStream("text.txt");
-		ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+				ObjectOutputStream oos = new ObjectOutputStream(fos)) {
 			oos.writeObject(listSpares);
 		} catch (IOException e) {
-			log.error(e.getMessage());
+			log.error(e);
 		}
 		long finsh = System.currentTimeMillis();
 		long itog = start - finsh;

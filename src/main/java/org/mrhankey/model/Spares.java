@@ -3,101 +3,84 @@ package org.mrhankey.model;
 import java.io.Serializable;
 
 public class Spares implements Serializable {
+	
+	
+	 /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String articul;
-	private String name;
-	private String price;
-	private String weight;
-	private String production;
-	private String subgroup;
-	private String urlImg;
-	private String applicability;
-
+     private String name;
+     private String Price;
+     private String Weight;
+     private String Applicability;
+     private String Subgroup;
+     private String Production;
+     
+     
 	public String getArticul() {
 		return articul;
 	}
-
 	public void setArticul(String articul) {
 		this.articul = articul;
 	}
-
 	public String getName() {
 		return name;
 	}
-
 	public void setName(String name) {
 		this.name = name;
 	}
-
 	public String getPrice() {
-		return price;
+		return Price;
 	}
-
-	public void setPrice(String string) {
-		this.price = string;
+	public void setPrice(String price) {
+		Price = price;
 	}
-
 	public String getWeight() {
-		return weight;
+		return Weight;
 	}
-
 	public void setWeight(String weight) {
-		this.weight = weight;
+		Weight = weight;
 	}
-
-	public String getProduction() {
-		return production;
-	}
-
-	public void setProduction(String production) {
-		this.production = production;
-	}
-
-	public String getSubgroup() {
-		return subgroup;
-	}
-
-	public void setSubgroup(String subgroup) {
-		this.subgroup = subgroup;
-	}
-
-	public String getUrlImg() {
-		return urlImg;
-	}
-
-	public void setUrlImg(String urlImg) {
-		this.urlImg = urlImg;
-	}
-
 	public String getApplicability() {
-		return applicability;
+		return Applicability;
 	}
-
 	public void setApplicability(String applicability) {
-		this.applicability = applicability;
+		Applicability = applicability;
 	}
-
+	public String getSubgroup() {
+		return Subgroup;
+	}
+	public void setSubgroup(String subgroup) {
+		Subgroup = subgroup;
+	}
+	public String getProduction() {
+		return Production;
+	}
+	public void setProduction(String production) {
+		Production = production;
+	}
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-	
 		builder.append(articul);
-		
+		builder.append(" ");
 		builder.append(name);
-		
-		builder.append(price);
-		
-		builder.append(weight);
-		
-		builder.append(production);
-		
-		builder.append(subgroup);
-		
-		builder.append(urlImg);
-		
-		builder.append(applicability);
-		
+		builder.append(" ");
+		builder.append(Price);
+		builder.append(" ");
+		builder.append(Weight);
+		builder.append(" ");
+		builder.append(Applicability);
+		builder.append(" ");
+		builder.append(Subgroup);
+		builder.append(" ");
+		builder.append(Production);
+		builder.append(" ");
 		return builder.toString();
 	}
-	
 
+     
+     
+     
 }
