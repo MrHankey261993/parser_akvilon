@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.JOptionPane;
 import org.apache.log4j.Logger;
@@ -25,12 +26,14 @@ public class CreateFile {
 	private Logger log = Logger.getLogger(CreateFile.class);
 	View view = new View();
 	public void createFile() {
-
+        Spares spares;
 		List<Spares> listSpares = null;
 		File file = new File("text.txt");
 		if (file.length() != 0) {
 			try (FileInputStream fis = new FileInputStream(file); ObjectInputStream ois = new ObjectInputStream(fis)) {
 				listSpares = (List<Spares>) ois.readObject();
+				
+				
 						System.out.println(listSpares.size());
 			} catch (ClassNotFoundException e) {
 				log.error(e.getMessage());

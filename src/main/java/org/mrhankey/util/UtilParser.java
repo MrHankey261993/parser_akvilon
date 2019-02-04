@@ -6,8 +6,6 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.apache.http.HttpHost;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -67,7 +65,7 @@ public class UtilParser {
 	public List<String> linksProduct() {
 		linksProducts = Collections.synchronizedList(new ArrayList<>());
 		long start = System.currentTimeMillis();
-		HttpHost proxy = new HttpHost("proxy.com", 80, "http");
+		
 		linksOnGruop().parallelStream().forEach(s -> {
 			Response response = null;
 			try {
@@ -85,7 +83,7 @@ public class UtilParser {
 				
 			try {
 				try {
-					doc = Jsoup.connect(URL + s).timeout(30000 * 10).userAgent("Chrome/70")
+					doc = Jsoup.connect(URL + s).timeout(30000 * 10).userAgent("Chrome/71")
 							.followRedirects(true).ignoreHttpErrors(true).ignoreContentType(true).get();
 				} catch (IOException e) {
 					log.error(e);
@@ -103,7 +101,7 @@ public class UtilParser {
 						    log.warn(response.statusCode());
 						}
 						
-						doc = Jsoup.connect(URL + href).timeout(30000 * 10).userAgent("Chrome/70")
+						doc = Jsoup.connect(URL + href).timeout(30000 * 10).userAgent("Mozilla / 5.0 (Windows NT 6.1; Win64; x64) ")
 								.followRedirects(true).ignoreHttpErrors(true).ignoreContentType(true).get();
 						Elements arrowRight;
 						do {
@@ -133,7 +131,7 @@ public class UtilParser {
 								} catch (InterruptedException e) {
 									log.error(e);
 								}
-								doc = Jsoup.connect(URL + href).timeout(30000 * 10).userAgent("Chrome/70")
+								doc = Jsoup.connect(URL + href).timeout(30000 * 10).userAgent("Chrome / 71.0.3578.98")
 										.followRedirects(true).ignoreHttpErrors(true).ignoreContentType(true).get();
 							}
 						} while (!arrowRight.isEmpty());
@@ -163,7 +161,7 @@ public class UtilParser {
 									Thread.sleep(30000);
 									log.warn("Статус код = " + response.statusCode() + s);
 								}
-								doc = Jsoup.connect(URL + href).timeout(30000 * 10).userAgent("Chrome/70")
+								doc = Jsoup.connect(URL + href).timeout(30000 * 10).userAgent("Mozilla / 5.0 (Windows NT 6.1; Win64; x64) ")
 										.followRedirects(true).ignoreHttpErrors(true).ignoreContentType(true).get();
 
 								System.out.println(response.statusCode() + " " + href);
