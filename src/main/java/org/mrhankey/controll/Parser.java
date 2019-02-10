@@ -20,7 +20,7 @@ public class Parser {
 	private List<Spares> listSpares = Collections.synchronizedList(new ArrayList<>());
 
 	public List<Spares> parser(List<String> links) {
-
+        System.out.println(links.size());
 		long start = System.currentTimeMillis();
 		links.parallelStream().forEach(s -> {
 
@@ -42,9 +42,13 @@ public class Parser {
 			Document doc = null;
 			try {
 				doc = Jsoup.connect(URL + s).timeout(30000 * 10).userAgent("Chrome/70").followRedirects(true).get();
+				Thread.sleep(2000);
 			} catch (IOException e) {
 				log.error(e);
+			} catch (InterruptedException e) {
+				log.error(e);
 			}
+			
 				Element manufacturer = doc.getElementById("propBRAND");
 				
 				if (manufacturer == null) {

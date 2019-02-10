@@ -112,7 +112,7 @@ public class UtilParser {
 								System.out.println(href);
 							}
 							try {
-								Thread.sleep(1000);
+								Thread.sleep(5000);
 							} catch (InterruptedException e) {
 								log.error(e);
 							}
@@ -146,7 +146,7 @@ public class UtilParser {
 							System.out.println(a.text() + Thread.currentThread().getName());
 						}
 						try {
-							Thread.sleep(1000);
+							Thread.sleep(5000);
 						} catch (InterruptedException e) {
 							log.error(e);
 						}
